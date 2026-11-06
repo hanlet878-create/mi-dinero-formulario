@@ -110,7 +110,7 @@
   if(!concepto||concepto.length>160||/[<>]/.test(concepto))throw Error('Escribe un concepto válido (máximo 160 caracteres).');
   const categoria=$('categoria').value;
   if(!cats[tipo].includes(categoria))throw Error('Selecciona la categoría.');
-  return {version:3,oper:tipo,monto,concepto,cuenta,categoria};
+  return {version:4,oper:tipo,monto,concepto,cuenta,categoria};
  }
  function montoCero(s){const v=String(s||'').trim();return (!v||v==='0'||v==='0.00')?'0.00':montoSeguro(v);}
  function mostrarRevision(d){
@@ -127,7 +127,7 @@
  function cerrar(){ if(tg&&typeof tg.close==='function')tg.close();else {$('confirmation').classList.add('hidden');$('entry').classList.remove('hidden');$('form').reset();} }
  function comando(d){if(d.oper==='transferencia')return '/transferir '+d.monto+'; '+d.cuenta+'; '+d.destino;if(d.oper==='prestamo')return '/pagarprestamo '+d.monto+'; '+d.cuenta+'; '+d.prestamo+(d.desglose==='confirmado'?'; '+d.capital+'; '+d.interes:'');return '/'+d.oper+' '+d.monto+'; '+d.concepto+'; '+d.cuenta+'; '+d.categoria;}
  async function copiar(){try{await navigator.clipboard.writeText(comando(payload));}catch(e){const t=document.createElement('textarea');t.value=comando(payload);document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}$('copiado').classList.remove('hidden');$('copiar').textContent='✓ Copiado';}
- for(const v of ['gasto','ingreso','prestamo','transferencia']) $(v).addEventListener('click',()=>{if(v==='prestamo'||v==='transferencia'){alert('Esta operación estará disponible cuando se complete la actualización del bot en Apps Script. Los gastos e ingresos siguen funcionando.');return;}tipo=v;actualizar()});$('desglose').addEventListener('change',actualizar);
+ for(const v of ['gasto','ingreso','prestamo','transferencia']) $(v).addEventListener('click',()=>{tipo=v;actualizar()});$('desglose').addEventListener('change',actualizar);
  $('form').addEventListener('submit',ev=>{ev.preventDefault();$('err').classList.remove('on');try{payload=normalizar();mostrarRevision(payload);}catch(e){mensajeError(e.message||String(e));}});
  $('volver').addEventListener('click',()=>{$('confirmation').classList.add('hidden');$('entry').classList.remove('hidden');});
  $('cancelar-entrada').addEventListener('click',cerrar);$('cancelar-final').addEventListener('click',cerrar);$('copiar').addEventListener('click',copiar);
@@ -136,7 +136,7 @@
   enviado=true;$('confirmar').disabled=true;try{tg.sendData(str);}catch(e){enviado=false;$('confirmar').disabled=false;alert('Telegram no pudo enviarlo. Usa el botón «Copiar el mensaje».');}
  }else{alert('Abre este formulario desde el botón de teclado de tu bot en Telegram. Como alternativa, usa «Copiar el mensaje».');}});
  if(tg){try{tg.ready();tg.expand();}catch(e){}}
- const mode=(new URLSearchParams(location.search)).get('tipo');if(['gasto','ingreso'].includes(mode))tipo=mode; actualizar();
+ const mode=(new URLSearchParams(location.search)).get('tipo');if(['gasto','ingreso','prestamo','transferencia'].includes(mode))tipo=mode; actualizar();
 })();
 </script>
 </body>
