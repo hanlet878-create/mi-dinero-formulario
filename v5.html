@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f7f8fa" />
+<title>MI DINERO V5 | Nuevo movimiento</title>
+<script src="https://telegram.org/js/telegram-web-app.js?64"></script>
+<style>
+:root{color-scheme:light dark;--bg:var(--tg-theme-secondary-bg-color,#f6f7f9);--paper:var(--tg-theme-bg-color,#fff);--text:var(--tg-theme-text-color,#16202d);--sub:var(--tg-theme-hint-color,#657080);--line:rgba(128,141,160,.22);--accent:var(--tg-theme-button-color,#246a5b);--on:var(--tg-theme-button-text-color,#fff);--radius:18px}
+*{box-sizing:border-box}body{margin:0;padding:0 0 env(safe-area-inset-bottom);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 30px}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--sub);font-weight:750}.head{display:flex;gap:12px;align-items:center;margin-bottom:17px}.mark{width:45px;height:45px;display:grid;place-items:center;background:var(--accent);color:var(--on);border-radius:14px;font-weight:900;letter-spacing:-.05em}h1{font-size:23px;letter-spacing:-.035em;margin:3px 0 0;font-weight:760}p{line-height:1.5}.hint{font-size:13px;color:var(--sub);margin:0 0 16px}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 2px 12px rgba(10,30,45,.035)}
+.switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;border:1px solid var(--line);background:var(--bg);padding:5px;border-radius:13px;margin-bottom:23px}.switch button{border:0;border-radius:9px;padding:12px 6px;font-size:13px;font-weight:720;color:var(--sub);background:none;cursor:pointer}.switch button.active{background:var(--paper);color:var(--text);box-shadow:0 1px 5px #0001}
+.field{margin-bottom:19px}.field label{display:block;font-size:13px;font-weight:710;margin-bottom:8px}.field small{font-size:12px;color:var(--sub);display:block;margin-top:6px}input,select{height:51px;width:100%;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--text);font-size:17px;outline:none;appearance:none}input:focus,select:focus{border:2px solid var(--accent);padding-left:13px}select{font-size:15px;appearance:auto}input::placeholder{color:#97a0aa}.num{position:relative}.num input{padding-left:56px;font-size:23px;font-weight:720}.num span{position:absolute;top:50%;transform:translateY(-50%);left:13px;font-size:14px;color:var(--sub);font-weight:700}input:invalid{box-shadow:none}
+.actions{display:flex;gap:9px;margin-top:24px}.button{cursor:pointer;border:none;border-radius:12px;padding:15px 16px;font-size:15px;font-weight:750}.primary{background:var(--accent);color:var(--on);flex:1}.ghost{background:var(--bg);color:var(--text);border:1px solid var(--line)}.wide{width:100%;margin-top:10px}.danger{color:#a03234}.footer{text-align:center;margin:19px auto 0;font-size:12px;line-height:1.5;color:var(--sub);max-width:370px}.muted{font-size:12px;color:var(--sub)}.amount{font-weight:770;font-size:31px;letter-spacing:-.03em;margin:6px 0 21px}.review{display:grid;grid-template-columns:1fr auto;gap:13px 10px;padding:16px 0 0;border-top:1px solid var(--line);font-size:14px}.review .k{color:var(--sub)}.review .v{text-align:right;font-weight:680;max-width:220px;overflow-wrap:anywhere}.pill{font-size:12px;font-weight:750;color:var(--accent);letter-spacing:.03em}.notice{background:var(--bg);border-radius:12px;padding:12px;font-size:12px;line-height:1.45;color:var(--sub);margin-top:17px}.err{display:none;border:1px solid #da8a8a;background:#fff0ee;color:#963d33;border-radius:10px;padding:10px 12px;margin:0 0 16px;font-size:13px}.err.on{display:block}.hidden{display:none!important}
+@media(prefers-reduced-motion:no-preference){.card{animation:fade .16s ease-out}@keyframes fade{from{opacity:.6;transform:translateY(3px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <div class="head"><div class="mark">M</div><div><div class="eyebrow">CONTROL FINANCIERO</div><h1>MI DINERO</h1></div></div>
+ <div id="entry">
+  <p class="hint">Registra en una pantalla. Consulta el saldo calculado en Telegram después de guardar.</p>
+  <div class="card">
+   <div class="switch" role="group" aria-label="Tipo de movimiento"><button id="gasto" type="button" class="active">− Gasto</button><button id="ingreso" type="button">+ Ingreso</button><button id="prestamo" type="button">💳 Préstamo</button><button id="transferencia" type="button">⇄ Transferir</button></div>
+   <form id="form">
+    <div class="err" id="err" role="alert"></div>
+    <div class="field"><label for="monto">1. Importe</label><div class="num"><span>RD$</span><input id="monto" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" maxlength="19" required autofocus /></div><small>Ejemplo: 350 o 978.73</small></div>
+    <div class="field" id="f-concepto"><label for="concepto">2. ¿En qué fue?</label><input id="concepto" type="text" maxlength="160" placeholder="Ej.: colmado, gasolina, propina" autocomplete="off" required /></div>
+    <div class="field"><label for="cuenta" id="label-cuenta">3. Cuenta</label><select id="cuenta" required><option value="">Selecciona una cuenta</option><option>Efectivo</option><option>Banco Popular</option><option>Qik</option><option>MIO Banreservas</option></select></div>
+    <div class="field" id="f-categoria"><label for="categoria">4. Categoría</label><select id="categoria" required></select></div>
+    <div class="field hidden" id="f-destino"><label for="destino">3. Cuenta que recibe el dinero</label><select id="destino"><option value="">Selecciona la cuenta de destino</option><option>Efectivo</option><option>Banco Popular</option><option>Qik</option><option>MIO Banreservas</option></select></div>
+    <div class="hidden" id="f-prestamo">
+      <div class="field"><label for="alias-prestamo">3. Préstamo</label>
+       <select id="alias-prestamo"><option value="">Selecciona el préstamo</option>
+       <option value="Motor Crédito — moto Hero Eco 150">Motor Crédito (moto)</option>
+       <option value="Banco Popular — consolidación">Banco Popular (consolidación)</option>
+       <option value="Amigo — préstamo personal">Amigo (préstamo personal)</option></select></div>
+      <div class="field"><label for="desglose">4. ¿El banco indicó cuánto fue capital e interés?</label>
+       <select id="desglose"><option value="pendiente">No — Registrar el pago y conciliar después</option><option value="confirmado">Sí — Tengo los importes exactos</option></select>
+       <small>Si hay comisiones, seguros u otros cargos, selecciona «No» y concilia después. No inventes intereses.</small>
+      </div>
+      <div class="hidden" id="desglose-detalle">
+       <div class="field"><label for="capital">Capital confirmado (RD$)</label><input id="capital" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" /><small>Importe que realmente reduce el préstamo.</small></div>
+       <div class="field"><label for="interes">Interés confirmado (RD$)</label><input id="interes" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" /></div>
+      </div>
+    </div>
+    <div class="field hidden" id="f-comision"><label for="comision">Comisión bancaria adicional (opcional)</label><div class="num"><span>RD$</span><input id="comision" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" maxlength="19" /></div><small>Ejemplo: pago al instante RD$100. Es un gasto separado; no reduce el préstamo ni forma parte del importe enviado. Si ya la registraste antes, deja este campo en cero.</small></div>
+    <div class="actions"><button class="button ghost" id="cancelar-entrada" type="button">Cancelar</button><button class="button primary" type="submit">Revisar movimiento</button></div>
+   </form>
+  </div>
+ </div>
+ <div class="hidden" id="confirmation">
+   <p class="hint">Comprueba que todos los datos sean correctos.</p>
+   <div class="card">
+    <div class="pill" id="tipo-label">GASTO</div><div class="amount" id="importe-label"></div>
+    <div class="review"><div class="k" id="review-concepto-titulo">Concepto</div><div class="v" id="r-concepto"></div><div class="k">Cuenta</div><div class="v" id="r-cuenta"></div><div class="k" id="review-categoria-titulo">Categoría</div><div class="v" id="r-categoria"></div><div class="k hidden" id="r-comision-label">Comisión bancaria</div><div class="v hidden" id="r-comision"></div><div class="k hidden" id="r-total-label">Total que sale de la cuenta</div><div class="v hidden" id="r-total"></div><div class="k">Fecha y hora</div><div class="v" id="r-fecha"></div></div>
+    <div class="notice">Nada se guarda hasta pulsar «Confirmar». Al confirmar, Telegram envía el movimiento a tu bot; el bot lo anotará cuando haga su próxima revisión.</div>
+    <div class="actions"><button id="volver" type="button" class="button ghost">Modificar</button><button id="confirmar" type="button" class="button primary">Confirmar</button></div>
+    <button id="copiar" type="button" class="button ghost wide">Si Telegram no lo envía: copiar el mensaje</button>
+    <button id="cancelar-final" type="button" class="button ghost wide danger">Cancelar sin registrar</button>
+    <div class="notice hidden" id="copiado">Mensaje copiado. Regresa a Telegram. Si incluye una comisión, copia y envía cada línea por separado; revisa que se confirme cada operación y evita duplicarla.</div>
+   </div>
+ </div>
+ <p class="footer">No introduces números de tarjetas ni claves. La página pública no guarda movimientos: solo los envía a tu bot privado; espera su confirmación antes de volver a intentarlo.</p>
+</main>
+<script>
+(()=>{'use strict';
+ const cats={gasto:['Alimentación','Colegio','Transporte','Vivienda','Servicios','Salud','Propinas','Regalos','Entretenimiento','Compras','Comisiones bancarias','Intereses','Educación','Impuestos','Otros gastos'],ingreso:['Salario','Ventas','Negocio','Regalos recibidos','Dinero encontrado','Reembolsos','Otros ingresos']};
+ const tg=(window.Telegram&&window.Telegram.WebApp)||null;
+ const $=id=>document.getElementById(id);let tipo='gasto';let payload=null;let enviado=false;
+ function actualizar(){
+  for(const t of ['gasto','ingreso','prestamo','transferencia']) $(t).classList.toggle('active',tipo===t);
+  const loan=tipo==='prestamo',transfer=tipo==='transferencia';
+  $('f-prestamo').classList.toggle('hidden',!loan);
+  $('f-comision').classList.toggle('hidden',!(loan||transfer));
+  $('f-destino').classList.toggle('hidden',!transfer);
+  $('f-concepto').classList.toggle('hidden',loan||transfer);
+  $('f-categoria').classList.toggle('hidden',loan||transfer);
+  $('concepto').required=!loan&&!transfer; $('categoria').required=!loan&&!transfer; $('alias-prestamo').required=loan; $('destino').required=transfer;
+  $('label-cuenta').textContent=(loan||transfer)?'2. ¿De qué cuenta salió el dinero?':'3. Cuenta';
+  const old=$('categoria').value; $('categoria').replaceChildren();
+  const ph=document.createElement('option');ph.value='';ph.textContent='Selecciona una categoría';$('categoria').appendChild(ph);
+  for(const item of cats[(loan||transfer)?'gasto':tipo]){const o=document.createElement('option');o.value=item;o.textContent=item;$('categoria').appendChild(o);}
+  if(cats[(loan||transfer)?'gasto':tipo].includes(old))$('categoria').value=old;
+  $('desglose-detalle').classList.toggle('hidden',$('desglose').value!=='confirmado');
+ }
+ function mensajeError(s){$('err').textContent=s;$('err').classList.add('on');}
+ function montoSeguro(raw){const s=raw.replace(/^RD\$\s*/i,'').replace(/\s/g,'');if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/.test(s))throw Error('Escribe un importe como 350 o 978.73. Usa punto para los centavos.');const n=Number(s.replace(/,/g,''));if(!Number.isFinite(n)||n<=0||n>1e10)throw Error('El importe debe ser mayor que cero.');return n.toFixed(2);}
+ function normalizar(){
+  const monto=montoSeguro($('monto').value.trim());const cuenta=$('cuenta').value;
+  if(!cuenta)throw Error('Selecciona la cuenta de origen o destino.');
+  if(tipo==='transferencia'){
+    const destino=$('destino').value;
+    if(!destino)throw Error('Selecciona la cuenta que recibe el dinero.');
+    if(destino===cuenta)throw Error('Selecciona dos cuentas distintas para la transferencia.');
+    return {version:5,oper:'transferencia',monto,cuenta,destino,comision:montoCero($('comision').value)};
+  }
+  if(tipo==='prestamo'){
+    const prestamo=$('alias-prestamo').value;
+    if(!prestamo)throw Error('Selecciona el préstamo que pagaste.');
+    const desglose=$('desglose').value;
+    const d={version:5,oper:'prestamo',monto,cuenta,prestamo,desglose,comision:montoCero($('comision').value)};
+    if(desglose==='confirmado'){
+      d.capital=montoCero($('capital').value);d.interes=montoCero($('interes').value);
+      if(Math.abs(Number(monto)-Number(d.capital)-Number(d.interes))>0.001)
+        throw Error('Capital + intereses deben sumar el total. Si hay otros cargos, elige «No tengo desglose».');
+    }
+    return d;
+  }
+  const concepto=$('concepto').value.trim();
+  if(!concepto||concepto.length>160||/[<>]/.test(concepto))throw Error('Escribe un concepto válido (máximo 160 caracteres).');
+  const categoria=$('categoria').value;
+  if(!cats[tipo].includes(categoria))throw Error('Selecciona la categoría.');
+  return {version:5,oper:tipo,monto,concepto,cuenta,categoria};
+ }
+ function montoCero(s){const v=String(s||'').trim();return (!v||v==='0'||v==='0.00')?'0.00':montoSeguro(v);}
+ function mostrarRevision(d){
+  $('entry').classList.add('hidden');$('confirmation').classList.remove('hidden');
+  $('tipo-label').textContent=d.oper==='prestamo'?'PAGO DE PRÉSTAMO':d.oper==='transferencia'?'TRANSFERENCIA':d.oper==='gasto'?'GASTO':'INGRESO';
+  $('importe-label').textContent='RD$ '+Number(d.monto).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});
+  $('r-cuenta').textContent=d.cuenta;
+  $('review-concepto-titulo').textContent=d.oper==='prestamo'?'Aplicación bancaria':d.oper==='transferencia'?'Concepto':'Concepto';
+  $('review-categoria-titulo').textContent=d.oper==='prestamo'?'Préstamo':d.oper==='transferencia'?'Cuenta de destino':'Categoría';
+  $('r-concepto').textContent=d.oper==='prestamo'?(d.desglose==='pendiente'?'Pendiente de desglose':'Capital RD$ '+d.capital+' · Interés RD$ '+d.interes):d.oper==='transferencia'?'Movimiento entre cuentas propias':d.concepto;
+  $('r-categoria').textContent=d.oper==='prestamo'?$('alias-prestamo').selectedOptions[0].textContent:d.oper==='transferencia'?d.destino:d.categoria;
+  const fee=Number(d.comision||0);const hasFee=(d.oper==='prestamo'||d.oper==='transferencia')&&fee>0;
+  for(const name of ['r-comision-label','r-comision','r-total-label','r-total'])$(name).classList.toggle('hidden',!hasFee);
+  if(hasFee){$('r-comision').textContent='RD$ '+fee.toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});$('r-total').textContent='RD$ '+(Number(d.monto)+fee).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  $('r-fecha').textContent=new Date().toLocaleString('es-DO',{dateStyle:'medium',timeStyle:'short'});
+ }
+ function cerrar(){ if(tg&&typeof tg.close==='function')tg.close();else {$('confirmation').classList.add('hidden');$('entry').classList.remove('hidden');$('form').reset();} }
+ function comando(d){
+  let principal=d.oper==='transferencia'?'/transferir '+d.monto+'; '+d.cuenta+'; '+d.destino:d.oper==='prestamo'?'/pagarprestamo '+d.monto+'; '+d.cuenta+'; '+d.prestamo+(d.desglose==='confirmado'?'; '+d.capital+'; '+d.interes:''):'/'+d.oper+' '+d.monto+'; '+d.concepto+'; '+d.cuenta+'; '+d.categoria;
+  // El modo copiar NO envía datos por sí solo: la comisión requiere un segundo comando.
+  if((d.oper==='prestamo'||d.oper==='transferencia')&&Number(d.comision)>0)principal+='\n/gasto '+d.comision+'; Comisión transferencia bancaria; '+d.cuenta+'; Comisiones bancarias';
+  return principal;
+ }
+ async function copiar(){try{await navigator.clipboard.writeText(comando(payload));}catch(e){const t=document.createElement('textarea');t.value=comando(payload);document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}$('copiado').classList.remove('hidden');$('copiar').textContent='✓ Copiado';}
+ for(const v of ['gasto','ingreso','prestamo','transferencia']) $(v).addEventListener('click',()=>{tipo=v;actualizar()});$('desglose').addEventListener('change',actualizar);
+ $('form').addEventListener('submit',ev=>{ev.preventDefault();$('err').classList.remove('on');try{payload=normalizar();mostrarRevision(payload);}catch(e){mensajeError(e.message||String(e));}});
+ $('volver').addEventListener('click',()=>{$('confirmation').classList.add('hidden');$('entry').classList.remove('hidden');});
+ $('cancelar-entrada').addEventListener('click',cerrar);$('cancelar-final').addEventListener('click',cerrar);$('copiar').addEventListener('click',copiar);
+ $('confirmar').addEventListener('click',()=>{if(enviado)return;if(!payload)return;const str=JSON.stringify(payload);if(str.length>4096){alert('Los datos son demasiado largos.');return;}if(tg && typeof tg.sendData==='function'){
+  // sendData cierra la mini app y entrega datos a Telegram; NO implica que el bot ya lo haya guardado.
+  enviado=true;$('confirmar').disabled=true;try{tg.sendData(str);}catch(e){enviado=false;$('confirmar').disabled=false;alert('Telegram no pudo enviarlo. Usa el botón «Copiar el mensaje».');}
+ }else{alert('Abre este formulario desde el botón de teclado de tu bot en Telegram. Como alternativa, usa «Copiar el mensaje».');}});
+ if(tg){try{tg.ready();tg.expand();}catch(e){}}
+ const mode=(new URLSearchParams(location.search)).get('tipo');if(['gasto','ingreso','prestamo','transferencia'].includes(mode))tipo=mode; actualizar();
+})();
+</script>
+</body>
+</html>
